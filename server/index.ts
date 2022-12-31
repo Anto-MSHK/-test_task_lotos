@@ -7,6 +7,7 @@ require("dotenv").config();
 const PORT = process.env.PORT || 5000;
 const wss = new Server({ port: +PORT });
 
+let seconds: number = 0;
 const clients: { [key: string]: ws.WebSocket } = {};
 const TIME_RELOAD = 30;
 const start = async () => {
@@ -14,19 +15,28 @@ const start = async () => {
   wss.on("connection", (ws) => {
     const id = setId();
     clients[id] = ws;
-    console.log(id);
     ws.send(
       JSON.stringify({
         status: "start",
         me: id,
+        seconds,
         curClient: Object.keys(clients)[indexClient],
         clients: Object.keys(clients),
         timeValue: TIME_RELOAD,
       })
     );
+    for (const idOfClient in clients)
+      if (idOfClient !== id)
+        clients[idOfClient].send(
+          JSON.stringify({
+            status: "reload",
+            seconds,
+            curClient: Object.keys(clients)[indexClient],
+            clients: Object.keys(clients),
+          })
+        );
   });
   let curClient: string = "";
-  let seconds: number = 0;
   const interval = setInterval(() => {
     if (Object.keys(clients).length > 0) {
       seconds++;
