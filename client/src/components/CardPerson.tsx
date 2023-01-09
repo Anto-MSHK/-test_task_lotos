@@ -26,7 +26,7 @@ export const CardPerson: React.FC<CardPersonI> = ({
       {isCurClient && (
         <div>
           <Progress
-            percent={(time / reloadTime) * 100}
+            percent={(Math.floor(time) / reloadTime) * 100}
             status="active"
             showInfo={false}
             style={{ padding: 0, margin: 0, textAlign: "center" }}

@@ -8,21 +8,20 @@ const PORT = process.env.PORT || 5000;
 const wss = new Server({ port: +PORT });
 
 const clients: { [key: string]: ws.WebSocket } = {};
-const TIME_RELOAD = 120;
+const TIME_RELOAD = 10;
 
 let startTime = new Date();
-let reloadTime = new Date(
-  startTime.setSeconds(startTime.getSeconds() + TIME_RELOAD)
-);
+let reloadTime = new Date();
 console.log(
   reloadTime.toLocaleString("en-US", {
     timeZone: "Europe/Moscow",
   })
 );
 const start = async () => {
-  let indexClient = 0;
+  let curID = "";
   wss.on("connection", (ws) => {
     const id = setId();
+    if (Object.keys(clients).length === 0) curID = id;
     clients[id] = ws;
     ws.send(
       JSON.stringify({
@@ -34,7 +33,7 @@ const start = async () => {
         reloadTime: reloadTime.toLocaleString("en-US", {
           timeZone: "Europe/Moscow",
         }),
-        curClient: Object.keys(clients)[indexClient],
+        curClient: curID,
         clients: Object.keys(clients),
         timeValue: TIME_RELOAD,
       })
@@ -50,19 +49,24 @@ const start = async () => {
             reloadTime: reloadTime.toLocaleString("en-US", {
               timeZone: "Europe/Moscow",
             }),
-            curClient: Object.keys(clients)[indexClient],
+            curClient: curID,
             clients: Object.keys(clients),
           })
         );
   });
-  let curClient: string = "";
   const interval = setInterval(() => {
     if (Object.keys(clients).length > 0) {
       if (new Date() > reloadTime) {
-        indexClient++;
-        if (clients[Object.keys(clients)[indexClient]] === undefined)
-          if (clients[Object.keys(clients)[indexClient + 1]] === undefined)
-            indexClient = 0;
+        for (const id in clients) {
+          if (clients[id].readyState === clients[id].CLOSED) {
+            delete clients[id];
+          }
+        }
+
+        let curClientInd = Object.keys(clients).findIndex((id) => id === curID);
+        if (curClientInd !== -1) curID = Object.keys(clients)[curClientInd + 1];
+
+        if (clients[curID] === undefined) curID = Object.keys(clients)[0];
 
         startTime = new Date();
         reloadTime = new Date(
@@ -75,7 +79,6 @@ const start = async () => {
           })
         );
 
-        curClient = Object.keys(clients)[indexClient];
         for (const id in clients)
           clients[id].send(
             JSON.stringify({
@@ -86,11 +89,14 @@ const start = async () => {
               reloadTime: reloadTime.toLocaleString("en-US", {
                 timeZone: "Europe/Moscow",
               }),
-              curClient,
+              curClient: curID,
               clients: Object.keys(clients),
             })
           );
       }
+    } else {
+      startTime = new Date();
+      reloadTime = new Date();
     }
   }, 100);
 };
