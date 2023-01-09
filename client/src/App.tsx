@@ -20,6 +20,7 @@ type dataT = {
 const App: React.FC = () => {
   const [data, setData] = useState<dataT>();
   const [me, setMe] = useState("");
+  const [next, setNext] = useState("");
   const [mSeconds, setMSeconds] = useState(0);
   const [timeValue, setTimeValue] = useState(0);
   const [reloadTime, setReloadTime] = useState("");
@@ -87,6 +88,12 @@ const App: React.FC = () => {
       if (dataForServer.me) {
         setMe(dataForServer.me);
       }
+
+      let nextInd = dataForServer.clients.indexOf(dataForServer.curClient);
+      if (nextInd + 1 < dataForServer.clients.length)
+        setNext(dataForServer.clients[nextInd + 1]);
+      else setNext(dataForServer.clients[0]);
+
       if (dataForServer.timeValue) {
         setTimeValue(dataForServer.timeValue);
       }
@@ -123,6 +130,7 @@ const App: React.FC = () => {
               id={client}
               isCurClient={data.curClient === client ? true : false}
               isMe={me && me === client ? true : false}
+              isNext={client === next ? true : false}
               time={mSeconds}
               reloadTime={timeValue}
             />
