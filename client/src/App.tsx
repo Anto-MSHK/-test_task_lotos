@@ -145,7 +145,11 @@ const App: React.FC = () => {
         </Row>
         <p style={{ textAlign: "center", fontSize: 16, padding: 10 }}>
           {" "}
-          Тестовое задание для АО «ЛОТОС», Мащенко Антон{" "}
+          Тестовое задание для АО «ЛОТОС», Мащенко Антон {""}
+          <br />
+          <a href="https://github.com/Anto-MSHK/test_task_lotos">
+            репозиторий GitHub
+          </a>
         </p>
       </Content>
     </Layout>
