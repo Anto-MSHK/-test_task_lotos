@@ -5,7 +5,7 @@ import { CardPerson } from "./components/CardPerson";
 import { NotificationPlacement } from "antd/es/notification/interface";
 
 const { Header, Content, Footer } = Layout;
-const WS_NAME = "wss://lotos-server.onrender.com/";
+const WS_NAME = `wss://${process.env.SERVER}/`;
 
 type dataT = {
   status: "start" | "reload";
