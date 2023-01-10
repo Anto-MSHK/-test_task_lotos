@@ -4,10 +4,10 @@
   "description": "test task for Lotos",
   "main": "index.ts",
   "scripts": {
-    "start": "node dist/src/index.js",
-    "start:dev": "nodemon",
-    "start:prod": "node -r ts-node/register/transpile-only -r tsconfig-paths/register ./dist/src/index.js",
-    "build": "tsc"
+	"start": "node dist/index.js",
+	"start:dev": "nodemon",
+	"start:prod": "node -r ts-node/register/transpile-only -r tsconfig-paths/register ./dist/index.js",
+	"build": "tsc"
   },
   "author": "",
   "license": "ISC",

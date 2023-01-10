@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Layout, notification, Row, theme } from "antd";
+import { Layout, notification, Row, Spin, theme } from "antd";
 import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 import { CardPerson } from "./components/CardPerson";
 import { NotificationPlacement } from "antd/es/notification/interface";
 
 const { Header, Content, Footer } = Layout;
-const WS_NAME = "ws://192.168.1.67:5000";
+const WS_NAME = "wss://lotos-server.onrender.com/";
 
 type dataT = {
   status: "start" | "reload";
@@ -49,10 +49,7 @@ const App: React.FC = () => {
       retired = outdated?.clients
         .map((client) => {
           let isExist = false;
-          console.log(newData.clients);
-          console.log(outdated.clients);
           for (let index in newData.clients) {
-            debugger;
             if (client === newData.clients[index]) {
               isExist = true;
             }
@@ -76,6 +73,7 @@ const App: React.FC = () => {
     shouldReconnect: (closeEvent) => true,
     onMessage: (event: WebSocketEventMap["message"]) => {
       const dataForServer: dataT = JSON.parse(event.data);
+      console.log(dataForServer);
 
       getNotifications(dataForServer, data);
 
@@ -122,24 +120,34 @@ const App: React.FC = () => {
           Таймер
         </div>
       </Header>
-      <Content style={{ padding: "0 50px" }}>
+      <Content style={{ padding: "0 50px", height: "100vh" }}>
         {contextHolder}
         <Row gutter={[16, 16]} style={{ marginTop: "10px" }}>
-          {data?.clients.map((client) => (
-            <CardPerson
-              id={client}
-              isCurClient={data.curClient === client ? true : false}
-              isMe={me && me === client ? true : false}
-              isNext={client === next ? true : false}
-              time={mSeconds}
-              reloadTime={timeValue}
+          {data?.clients && data?.clients.length > 0 ? (
+            data?.clients.map((client) => (
+              <CardPerson
+                id={client}
+                key={client}
+                isCurClient={data.curClient === client ? true : false}
+                isMe={me && me === client ? true : false}
+                isNext={client === next ? true : false}
+                time={mSeconds}
+                reloadTime={timeValue}
+              />
+            ))
+          ) : (
+            <Spin
+              tip="Загрузка..."
+              size="large"
+              style={{ width: "100%", marginTop: 30 }}
             />
-          ))}
+          )}
         </Row>
+        <p style={{ textAlign: "center", fontSize: 16, padding: 10 }}>
+          {" "}
+          Тестовое задание для АО «ЛОТОС», Мащенко Антон{" "}
+        </p>
       </Content>
-      <Footer style={{ textAlign: "center" }}>
-        Тестовое задание для АО «ЛОТОС», Мащенко Антон
-      </Footer>
     </Layout>
   );
 };

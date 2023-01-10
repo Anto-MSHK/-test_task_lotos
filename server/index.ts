@@ -1,24 +1,32 @@
 import ws from "ws";
+import { createServer } from "https";
 const { Server } = ws;
 import { v4 as setId } from "uuid";
 
 require("dotenv").config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 const wss = new Server({ port: +PORT });
 
 const clients: { [key: string]: ws.WebSocket } = {};
-const TIME_RELOAD = 10;
+const TIME_RELOAD = 120;
 
 let startTime = new Date();
 let reloadTime = new Date();
-console.log(
-  reloadTime.toLocaleString("en-US", {
-    timeZone: "Europe/Moscow",
-  })
-);
+
+type dataT = {
+  status: "start" | "reload";
+  me?: string;
+  startTime: string;
+  reloadTime: string;
+  curClient: string;
+  clients: string[];
+  timeValue: number;
+};
+
 const start = async () => {
   let curID = "";
+
   wss.on("connection", (ws) => {
     const id = setId();
     if (Object.keys(clients).length === 0) curID = id;
@@ -27,34 +35,27 @@ const start = async () => {
       JSON.stringify({
         status: "start",
         me: id,
-        startTime: startTime.toLocaleString("en-US", {
-          timeZone: "Europe/Moscow",
-        }),
-        reloadTime: reloadTime.toLocaleString("en-US", {
-          timeZone: "Europe/Moscow",
-        }),
+        startTime: startTime.toJSON(),
+        reloadTime: reloadTime.toJSON(),
         curClient: curID,
         clients: Object.keys(clients),
         timeValue: TIME_RELOAD,
-      })
+      } as dataT)
     );
     for (const idOfClient in clients)
       if (idOfClient !== id)
         clients[idOfClient].send(
           JSON.stringify({
             status: "reload",
-            startTime: startTime.toLocaleString("en-US", {
-              timeZone: "Europe/Moscow",
-            }),
-            reloadTime: reloadTime.toLocaleString("en-US", {
-              timeZone: "Europe/Moscow",
-            }),
+            startTime: startTime.toJSON(),
+            reloadTime: reloadTime.toJSON(),
             curClient: curID,
             clients: Object.keys(clients),
-          })
+          } as dataT)
         );
   });
-  const interval = setInterval(() => {
+
+  setInterval(() => {
     if (Object.keys(clients).length > 0) {
       if (new Date() > reloadTime) {
         for (const id in clients) {
@@ -73,25 +74,15 @@ const start = async () => {
           startTime.setSeconds(startTime.getSeconds() + TIME_RELOAD)
         );
 
-        console.log(
-          reloadTime.toLocaleString("en-US", {
-            timeZone: "Europe/Moscow",
-          })
-        );
-
         for (const id in clients)
           clients[id].send(
             JSON.stringify({
               status: "reload",
-              startTime: startTime.toLocaleString("en-US", {
-                timeZone: "Europe/Moscow",
-              }),
-              reloadTime: reloadTime.toLocaleString("en-US", {
-                timeZone: "Europe/Moscow",
-              }),
+              startTime: startTime.toJSON(),
+              reloadTime: reloadTime.toJSON(),
               curClient: curID,
               clients: Object.keys(clients),
-            })
+            } as dataT)
           );
       }
     } else {
